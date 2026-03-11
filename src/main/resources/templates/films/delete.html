@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Удалить фильм | Кинотеатр</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+    <style>
+        :root {
+            --cinema-red: #e50914;
+        }
+
+        body {
+            background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .delete-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            overflow: hidden;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .delete-header {
+            background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .delete-body {
+            padding: 40px;
+        }
+
+        .warning-icon {
+            font-size: 4rem;
+            color: #ff416c;
+            margin-bottom: 20px;
+        }
+
+        .film-details {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 30px 0;
+            border-left: 5px solid #ff416c;
+        }
+
+        .film-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .film-poster {
+            width: 80px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-right: 20px;
+        }
+
+        .sessions-warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 25px 0;
+        }
+
+        .btn-delete {
+            background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+            border: none;
+            border-radius: 10px;
+            padding: 15px 30px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: white;
+            transition: all 0.3s;
+            width: 100%;
+        }
+
+        .btn-delete:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(255, 65, 108, 0.3);
+        }
+
+        .btn-cancel {
+            background: #6c757d;
+            border: none;
+            border-radius: 10px;
+            padding: 15px 30px;
+            font-weight: 600;
+            color: white;
+            width: 100%;
+        }
+
+        .consequences-list {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="delete-card">
+        <div class="delete-header">
+            <h2 class="mb-0">
+                <i class="bi bi-exclamation-triangle"></i> Удаление фильма
+            </h2>
+            <p class="mb-0 mt-2 opacity-75">Это действие невозможно отменить</p>
+        </div>
+
+        <div class="delete-body">
+            <div class="text-center">
+                <div class="warning-icon">
+                    <i class="bi bi-trash"></i>
+                </div>
+
+                <h3 class="mb-3">Вы уверены, что хотите удалить этот фильм?</h3>
+                <p class="lead mb-4">Это приведет к безвозвратному удалению всех связанных данных</p>
+            </div>
+
+            <!-- Информация о фильме -->
+            <div class="film-details">
+                <div class="film-info">
+                    <img th:src="'https://via.placeholder.com/80x120/1a1a2e/' + ${film.ageRating == '0+' ? '28a745' :
+                                                                      film.ageRating == '6+' ? 'ffc107' :
+                                                                      film.ageRating == '12+' ? 'fd7e14' :
+                                                                      film.ageRating == '16+' ? 'dc3545' : '212529'} +
+                                                                      '?text=' + ${film.title}"
+                         class="film-poster" alt="Постер">
+                    <div>
+                        <h5 class="mb-1" th:text="${film.title}">Название фильма</h5>
+                        <p class="mb-1 text-muted" th:text="${film.genre}">Жанр</p>
+                        <p class="mb-0">
+                                <span class="badge bg-secondary me-2" th:text="${film.duration} + ' мин'">
+                                    120 мин
+                                </span>
+                            <span class="badge" th:classappend="'bg-' + ${film.ageRating == '0+' ? 'success' :
+                                                                  film.ageRating == '6+' ? 'warning text-dark' :
+                                                                  film.ageRating == '12+' ? 'info' :
+                                                                  film.ageRating == '16+' ? 'danger' : 'dark'}"
+                                  th:text="${film.ageRating}">
+                                    16+
+                                </span>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <p class="mb-2">
+                            <i class="bi bi-hash text-muted"></i>
+                            <strong>ID фильма:</strong>
+                            <span class="badge bg-dark" th:text="${film.filmId}">1</span>
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="mb-2">
+                            <i class="bi bi-calendar text-muted"></i>
+                            <strong>Добавлен в систему:</strong>
+                            <span th:text="${#dates.format(#dates.createNow(), 'dd.MM.yyyy')}">
+                                01.01.2024
+                            </span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Предупреждение о сеансах -->
+            <div th:if="${not #lists.isEmpty(film.sessions)}" class="sessions-warning">
+                <h5 class="text-warning">
+                    <i class="bi bi-exclamation-triangle-fill"></i> КРИТИЧЕСКОЕ ПРЕДУПРЕЖДЕНИЕ
+                </h5>
+                <p class="mb-0">
+                    У этого фильма запланировано <strong th:text="${film.sessions.size()}">0</strong> сеансов!
+                    При удалении фильма все связанные сеансы и продажи также будут удалены.
+                    Это может привести к финансовым потерям и недовольству клиентов.
+                </p>
+            </div>
+
+            <!-- Последствия удаления -->
+            <div class="consequences-list">
+                <h6 class="mb-3">
+                    <i class="bi bi-list-check text-danger"></i> Последствия удаления:
+                </h6>
+                <ul class="mb-0">
+                    <li>Фильм будет полностью удален из каталога</li>
+                    <li th:if="${not #lists.isEmpty(film.sessions)}">
+                        Все <strong th:text="${film.sessions.size()}">0</strong> сеансов будут удалены
+                    </li>
+                    <li>Все продажи связанных сеансов будут удалены</li>
+                    <li>Данные будут утеряны без возможности восстановления</li>
+                    <li>Клиенты с купленными билетами будут недовольны</li>
+                </ul>
+            </div>
+
+            <!-- Форма удаления -->
+            <form th:action="@{/films/{id}/delete(id=${film.filmId})}" method="post">
+                <div class="row mt-5">
+                    <div class="col-md-6 mb-3">
+                        <a href="/films" class="btn-cancel btn w-100 py-3">
+                            <i class="bi bi-x-circle"></i> Отмена
+                        </a>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <button type="submit" class="btn-delete btn w-100 py-3">
+                            <i class="bi bi-trash"></i> Да, удалить фильм
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Альтернатива -->
+            <div class="mt-4 text-center text-muted">
+                <p class="mb-0 small">
+                    <i class="bi bi-lightbulb"></i>
+                    Вместо удаления рассмотрите возможность редактирования информации о фильме
+                </p>
+                <a th:href="@{/films/{id}/edit(id=${film.filmId})}"
+                   class="btn btn-outline-primary btn-sm mt-2">
+                    <i class="bi bi-pencil"></i> Редактировать вместо удаления
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Добавляем подтверждение с подсчетом связанных данных
+    document.addEventListener('DOMContentLoaded', function() {
+        const deleteBtn = document.querySelector('.btn-delete');
+        if (deleteBtn) {
+            deleteBtn.addEventListener('click', function(e) {
+                const sessionsCount = [[${film.sessions.size()}]];
+                let warningText = 'Вы уверены, что хотите удалить этот фильм?';
+
+                if (sessionsCount > 0) {
+                    let salesCount = 0;
+                    <th:block th:each="session : ${film.sessions}">
+                        salesCount += [[${session.sales.size()}]];
+                    </th:block>
+
+                    warningText = `Вы собираетесь удалить фильм и ВСЕ связанные данные!\n\n` +
+                                 `Будет удалено:\n` +
+                                 `• ${sessionsCount} сеансов\n` +
+                                 `• ${salesCount} продаж\n\n` +
+                                 `Это действие НЕЛЬЗЯ отменить! Вы уверены?`;
+                } else {
+                    warningText += '\n\nЭто действие НЕЛЬЗЯ отменить! Вы уверены?';
+                }
+
+                if (!confirm(warningText)) {
+                    e.preventDefault();
+                }
+            });
+        }
+    });
+</script>
+</body>
+</html>

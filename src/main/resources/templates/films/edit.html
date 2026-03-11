@@ -1,90 +1,278 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Редактировать фильм</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Редактировать фильм | Кинотеатр</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+    <style>
+        :root {
+            --cinema-red: #e50914;
+            --cinema-dark: #141414;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            min-height: 100vh;
+            padding-top: 20px;
+            padding-bottom: 50px;
+        }
+
+        .form-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .form-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            overflow: hidden;
+        }
+
+        .form-header {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .form-body {
+            padding: 40px;
+        }
+
+        .film-info {
+            background: #f8f9ff;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-left: 5px solid #f093fb;
+        }
+
+        .film-id {
+            background: #6c757d;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        .btn-update {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border: none;
+            border-radius: 10px;
+            padding: 15px 40px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: white;
+            transition: all 0.3s;
+            width: 100%;
+        }
+
+        .btn-update:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(240, 147, 251, 0.3);
+        }
+
+        .session-count {
+            background: #6c757d;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+    </style>
 </head>
 <body>
-<nav class="navbar navbar-dark bg-warning mb-4">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="/">🎬 Кинотеатр</a>
-        <span class="navbar-text text-dark">✏️ Редактировать фильм</span>
+<!-- Навигация -->
+<nav class="navbar navbar-expand-lg navbar-dark" style="background: rgba(0,0,0,0.85);">
+    <div class="container">
+        <a class="navbar-brand" href="/">
+            <i class="bi bi-camera-reels"></i> CINEMA PRO
+        </a>
+        <div class="navbar-nav ms-auto">
+            <a class="nav-link" href="/films">
+                <i class="bi bi-arrow-left"></i> Назад к фильмам
+            </a>
+        </div>
     </div>
 </nav>
 
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-8 col-lg-6">
-            <div class="card">
-                <div class="card-header bg-warning">
-                    <h4 class="mb-0">Редактирование: <span th:text="${film.title}"></span></h4>
+<div class="container mt-4">
+    <div class="form-container">
+        <!-- Заголовок -->
+        <div class="text-center text-white mb-5">
+            <h1 class="display-5 fw-bold">✏️ Редактировать фильм</h1>
+            <p class="lead">Измените информацию о фильме в каталоге кинотеатра</p>
+        </div>
+
+        <!-- Информация о фильме -->
+        <div class="film-info">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="mb-0" th:text="${film.title}">Название фильма</h4>
+                <span class="film-id">
+                        ID: <span th:text="${film.filmId}">1</span>
+                    </span>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="mb-2">
+                        <i class="bi bi-tag text-muted"></i>
+                        Жанр: <strong th:text="${film.genre}">Жанр</strong>
+                    </p>
                 </div>
-                <div class="card-body">
-                    <form th:action="@{'/films/update/' + ${film.filmId}}" th:object="${film}" method="post">
-                        <!-- Скрытое поле ID -->
-                        <input type="hidden" th:field="*{filmId}" />
-
-                        <!-- Название -->
-                        <div class="mb-3">
-                            <label for="title" class="form-label">Название фильма *</label>
-                            <input type="text" class="form-control" id="title" th:field="*{title}" required>
-                        </div>
-
-                        <!-- Жанр -->
-                        <div class="mb-3">
-                            <label for="genre" class="form-label">Жанр *</label>
-                            <input type="text" class="form-control" id="genre" th:field="*{genre}" required>
-                        </div>
-
-                        <!-- Длительность и рейтинг -->
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="duration" class="form-label">Длительность (минуты) *</label>
-                                <input type="number" class="form-control" id="duration" th:field="*{duration}"
-                                       min="1" max="300" required>
-                            </div>
-
-                            <div class="col-md-6 mb-3">
-                                <label for="ageRating" class="form-label">Возрастной рейтинг *</label>
-                                <select class="form-select" id="ageRating" th:field="*{ageRating}" required>
-                                    <option th:each="rating : ${ageRatings}"
-                                            th:value="${rating}"
-                                            th:text="${rating}"
-                                            th:selected="${rating == film.ageRating}">
-                                    </option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <!-- Описание -->
-                        <div class="mb-3">
-                            <label for="description" class="form-label">Описание</label>
-                            <textarea class="form-control" id="description" th:field="*{description}"
-                                      rows="4"></textarea>
-                        </div>
-
-                        <!-- Кнопки -->
-                        <div class="d-flex justify-content-between mt-4">
-                            <a href="/films" class="btn btn-secondary">← Отмена</a>
-                            <div>
-                                <button type="submit" class="btn btn-warning">💾 Сохранить изменения</button>
-                                <a th:href="@{'/films/delete/' + ${film.filmId}}"
-                                   class="btn btn-danger"
-                                   onclick="return confirm('Удалить фильм «' + document.getElementById('title').value + '»?')">
-                                    🗑️ Удалить
-                                </a>
-                            </div>
-                        </div>
-                    </form>
+                <div class="col-md-6">
+                    <p class="mb-2">
+                        <i class="bi bi-clock text-muted"></i>
+                        Длительность: <strong th:text="${film.duration} + ' мин'">120 мин</strong>
+                    </p>
                 </div>
             </div>
-
-            <div class="mt-3 text-center">
-                <a href="/films" class="text-decoration-none">← Вернуться к списку фильмов</a>
+            <div class="d-flex justify-content-between align-items-center">
+                    <span class="badge" th:classappend="'bg-' + ${film.ageRating == '0+' ? 'success' :
+                                                           film.ageRating == '6+' ? 'warning text-dark' :
+                                                           film.ageRating == '12+' ? 'info' :
+                                                           film.ageRating == '16+' ? 'danger' : 'dark'}"
+                          th:text="${film.ageRating}">
+                        16+
+                    </span>
+                <span class="session-count">
+                        <i class="bi bi-clock-history"></i>
+                        Сеансов: <span th:text="${film.sessions.size()}">0</span>
+                    </span>
             </div>
+        </div>
+
+        <!-- Форма -->
+        <div class="form-card">
+            <div class="form-header">
+                <h2 class="mb-0">
+                    <i class="bi bi-pencil"></i> Редактирование информации
+                </h2>
+                <p class="mb-0 mt-2 opacity-75">Измените необходимые поля</p>
+            </div>
+
+            <div class="form-body">
+                <form th:action="@{/films/{id}(id=${film.filmId})}" th:object="${film}" method="post">
+                    <!-- Название фильма -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">
+                            <i class="bi bi-card-heading text-primary"></i> Название фильма
+                        </label>
+                        <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-film"></i>
+                                </span>
+                            <input type="text" class="form-control"
+                                   th:field="*{title}"
+                                   placeholder="Название фильма"
+                                   required>
+                        </div>
+                    </div>
+
+                    <!-- Жанр -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">
+                            <i class="bi bi-tags text-primary"></i> Жанр фильма
+                        </label>
+                        <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-bookmark"></i>
+                                </span>
+                            <input type="text" class="form-control"
+                                   th:field="*{genre}"
+                                   placeholder="Жанр"
+                                   required>
+                        </div>
+                    </div>
+
+                    <!-- Длительность и рейтинг -->
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <label class="form-label fw-bold">
+                                <i class="bi bi-clock text-primary"></i> Длительность (минуты)
+                            </label>
+                            <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-hourglass"></i>
+                                    </span>
+                                <input type="number" class="form-control"
+                                       th:field="*{duration}"
+                                       min="1" max="300"
+                                       placeholder="120" required>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-4">
+                            <label class="form-label fw-bold">
+                                <i class="bi bi-people text-primary"></i> Возрастной рейтинг
+                            </label>
+                            <select class="form-select" th:field="*{ageRating}" required>
+                                <option value="0+">0+ (Для всех возрастов)</option>
+                                <option value="6+">6+ (Для детей от 6 лет)</option>
+                                <option value="12+">12+ (Для зрителей от 12 лет)</option>
+                                <option value="16+">16+ (Для зрителей от 16 лет)</option>
+                                <option value="18+">18+ (Только для взрослых)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Предупреждение -->
+                    <div class="alert alert-warning mt-4">
+                        <h5><i class="bi bi-exclamation-triangle"></i> Важно!</h5>
+                        <ul class="mb-0">
+                            <li>Изменения сохранятся для всех связанных сеансов</li>
+                            <li>Проверьте правильность возрастного рейтинга</li>
+                            <li>После сохранения изменения нельзя отменить</li>
+                        </ul>
+                    </div>
+
+                    <!-- Кнопки -->
+                    <div class="row mt-5">
+                        <div class="col-md-6 mb-3">
+                            <a href="/films" class="btn btn-secondary w-100 py-3">
+                                <i class="bi bi-x-circle"></i> Отмена
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <button type="submit" class="btn-update btn w-100 py-3">
+                                <i class="bi bi-save"></i> Сохранить изменения
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Дополнительные действия -->
+        <div class="mt-4 text-center">
+            <a th:href="@{/films/{id}/delete(id=${film.filmId})}"
+               class="text-white text-decoration-none me-4">
+                <i class="bi bi-trash"></i> Удалить фильм
+            </a>
+            <a href="/sessions/create" class="text-white text-decoration-none">
+                <i class="bi bi-calendar-plus"></i> Создать сеанс для этого фильма
+            </a>
         </div>
     </div>
 </div>
+
+<!-- Футер -->
+<footer class="text-center text-white mt-5">
+    <div class="container">
+        <p class="mb-1">
+            <i class="bi bi-c-circle"></i> 2024 Система управления кинотеатром
+        </p>
+        <p class="text-white-50 small">
+            Редактирование информации о фильмах
+        </p>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

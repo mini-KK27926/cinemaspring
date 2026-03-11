@@ -2,35 +2,20 @@ package com.example.demo.repository;
 
 import com.example.demo.entity.Session;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.List;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
-@Repository
 public interface SessionRepository extends JpaRepository<Session, Long> {
 
-    // ✅ Сеансы на конкретную дату
-    List<Session> findBySessionDate(LocalDate date);
+    @Modifying
+    @Transactional
+    @Query(value = "DELETE FROM sales WHERE session_id = :sessionId", nativeQuery = true)
+    void deleteSalesBySessionId(@Param("sessionId") Long sessionId);
 
-    // ✅ Сеансы фильма
-    List<Session> findByFilmFilmId(Long filmId);
-
-    // ✅ Сеансы в зале
-    List<Session> findByHallHallId(Long hallId);
-
-    // ✅ Сеансы между датами
-    List<Session> findBySessionDateBetween(LocalDate startDate, LocalDate endDate);
-
-    // ✅ Сортировка по дате и времени
-    List<Session> findAllByOrderBySessionDateAscStartTimeAsc();
-
-    // ✅ Будущие сеансы
-    List<Session> findBySessionDateGreaterThanEqual(LocalDate date);
-
-    // ✅ Сеансы на конкретную дату и время
-    List<Session> findBySessionDateAndStartTime(LocalDate date, LocalTime time);
-
-    // ✅ Сеансы фильма на конкретную дату
-    List<Session> findByFilmFilmIdAndSessionDate(Long filmId, LocalDate date);
+    @Modifying
+    @Transactional
+    @Query(value = "DELETE FROM tickets WHERE session_id = :sessionId", nativeQuery = true)
+    void deleteTicketsBySessionId(@Param("sessionId") Long sessionId);
 }

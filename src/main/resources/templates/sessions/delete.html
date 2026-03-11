@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Удаление сеанса</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body style="background: #1a1a1a; color: white; display: flex; align-items: center; min-height: 100vh;">
+<div class="container text-center">
+    <div class="p-5 mx-auto" style="background: #2d2d2d; border-radius: 20px; max-width: 500px;">
+        <h2 class="text-danger mb-4">Удалить сеанс?</h2>
+        <p>Вы собираетесь удалить сеанс фильма:</p>
+        <h4 th:text="${sess.film.title}">Название</h4>
+        <p class="text-white-50" th:text="${sess.startTime} + ' | ' + ${sess.sessionDate}"></p>
+
+        <form th:action="@{/sessions/{id}/delete(id=${sess.sessionId})}" method="post" class="mt-4">
+            <button type="submit" class="btn btn-danger px-5">Да, удалить</button>
+            <a href="/sessions" class="btn btn-secondary px-5">Отмена</a>
+        </form>
+    </div>
+</div>
+</body>
+</html>

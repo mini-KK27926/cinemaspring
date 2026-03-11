@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Удалить продажу | Кинотеатр</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+    <style>
+        :root {
+            --cinema-red: #e50914;
+        }
+
+        body {
+            background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .delete-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            overflow: hidden;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .delete-header {
+            background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .delete-body {
+            padding: 40px;
+        }
+
+        .warning-icon {
+            font-size: 4rem;
+            color: #ff416c;
+            margin-bottom: 20px;
+        }
+
+        .sale-details {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 30px 0;
+            border-left: 5px solid #ff416c;
+        }
+
+        .customer-avatar {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-right: 20px;
+        }
+
+        .financial-warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 25px 0;
+        }
+
+        .btn-delete {
+            background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+            border: none;
+            border-radius: 10px;
+            padding: 15px 30px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: white;
+            transition: all 0.3s;
+            width: 100%;
+        }
+
+        .btn-delete:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(255, 65, 108, 0.3);
+        }
+
+        .btn-cancel {
+            background: #6c757d;
+            border: none;
+            border-radius: 10px;
+            padding: 15px 30px;
+            font-weight: 600;
+            color: white;
+            width: 100%;
+        }
+
+        .consequences-list {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .ticket-icon {
+            color: #198754;
+            font-size: 2rem;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="delete-card">
+        <div class="delete-header">
+            <h2 class="mb-0">
+                <i class="bi bi-exclamation-triangle"></i> Удаление продажи
+            </h2>
+            <p class="mb-0 mt-2 opacity-75">Это действие невозможно отменить</p>
+        </div>
+
+        <div class="delete-body">
+            <div class="text-center">
+                <div class="warning-icon">
+                    <i class="bi bi-trash"></i>
+                </div>
+
+                <h3 class="mb-3">Вы уверены, что хотите удалить эту продажу?</h3>
+                <p class="lead mb-4">Это приведет к безвозвратному удалению данных о продаже</p>
+            </div>
+
+            <!-- Информация о продаже -->
+            <div class="sale-details">
+                <div class="d-flex align-items-center mb-4">
+                    <div class="customer-avatar">
+                        <span th:text="${sale.customerName?.substring(0, 1)?.toUpperCase()} ?: 'К'">
+                            К
+                        </span>
+                    </div>
+                    <div>
+                        <h5 class="mb-1" th:text="${sale.customerName}">Клиент</h5>
+                        <p class="mb-0 text-muted">
+                            <i class="bi bi-calendar"></i>
+                            <span th:text="${#dates.format(sale.saleDatetime, 'dd.MM.yyyy HH:mm')}">
+                                01.01.2024 18:00
+                            </span>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <p class="mb-2">
+                            <i class="bi bi-film text-muted"></i>
+                            <strong>Фильм:</strong>
+                            <span th:text="${sale.session?.film?.title} ?: 'Не указано'">
+                                Название фильма
+                            </span>
+                        </p>
+                        <p class="mb-2">
+                            <i class="bi bi-clock text-muted"></i>
+                            <strong>Время сеанса:</strong>
+                            <span th:text="${sale.session?.startTime ? #dates.format(sale.session.startTime, 'dd.MM HH:mm') : 'Не указано'}">
+                                01.01 18:00
+                            </span>
+                        </p>
+                        <p class="mb-2">
+                            <i class="bi bi-door-open text-muted"></i>
+                            <strong>Зал:</strong>
+                            <span th:text="${sale.session?.hallNumber} ?: 'Не указан'">1</span>
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="text-center mb-3">
+                            <div class="ticket-icon">
+                                <i class="bi bi-ticket-perforated"></i>
+                            </div>
+                            <div class="display-6 fw-bold" th:text="${sale.ticketsCount}">2</div>
+                            <small class="text-muted">билетов</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <p class="mb-2">
+                            <i class="bi bi-hash text-muted"></i>
+                            <strong>ID продажи:</strong>
+                            <span class="badge bg-dark" th:text="${sale.saleId}">1</span>
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="mb-2 text-end">
+                            <i class="bi bi-cash text-muted"></i>
+                            <strong>Сумма:</strong>
+                            <span class="badge bg-success fs-6" th:text="${sale.paymentAmount} + ' ₽'">
+                                1000 ₽
+                            </span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Финансовое предупреждение -->
+            <div class="financial-warning">
+                <h5 class="text-warning">
+                    <i class="bi bi-cash-coin"></i> ФИНАНСОВОЕ ПРЕДУПРЕЖДЕНИЕ
+                </h5>
+                <p class="mb-0">
+                    Удаление этой продажи приведет к изменению финансовой отчетности.
+                    Сумма <strong th:text="${sale.paymentAmount} + ' ₽'">1000 ₽</strong> будет вычтена из общей выручки.
+                </p>
+            </div>
+
+            <!-- Последствия удаления -->
+            <div class="consequences-list">
+                <h6 class="mb-3">
+                    <i class="bi bi-list-check text-danger"></i> Последствия удаления:
+                </h6>
+                <ul class="mb-0">
+                    <li>Данные о продаже будут удалены из системы</li>
+                    <li>Финансовая отчетность будет изменена</li>
+                    <li>Освободятся места на сеансе (<span th:text="${sale.ticketsCount}">2</span> места)</li>
+                    <li>Данные будут утеряны без возможности восстановления</li>
+                    <li>Может потребоваться возврат средств клиенту</li>
+                </ul>
+            </div>
+
+            <!-- Форма удаления -->
+            <form th:action="@{/sales/{id}/delete(id=${sale.saleId})}" method="post">
+                <div class="row mt-5">
+                    <div class="col-md-6 mb-3">
+                        <a href="/sales" class="btn-cancel btn w-100 py-3">
+                            <i class="bi bi-x-circle"></i> Отмена
+                        </a>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <button type="submit" class="btn-delete btn w-100 py-3">
+                            <i class="bi bi-trash"></i> Да, удалить продажу
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Альтернатива -->
+            <div class="mt-4 text-center text-muted">
+                <p class="mb-0 small">
+                    <i class="bi bi-lightbulb"></i>
+                    Вместо удаления рассмотрите возможность редактирования информации о продаже
+                </p>
+                <a th:href="@{/sales/{id}/edit(id=${sale.saleId})}"
+                   class="btn btn-outline-primary btn-sm mt-2">
+                    <i class="bi bi-pencil"></i> Редактировать вместо удаления
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Добавляем подтверждение для удаления
+    document.addEventListener('DOMContentLoaded', function() {
+        const deleteBtn = document.querySelector('.btn-delete');
+        if (deleteBtn) {
+            deleteBtn.addEventListener('click', function(e) {
+                const customerName = [[${sale.customerName}]];
+                const amount = [[${sale.paymentAmount}]];
+                const tickets = [[${sale.ticketsCount}]];
+
+                const warningText = `Вы собираетесь удалить продажу:\n\n` +
+                                  `Клиент: ${customerName}\n` +
+                                  `Количество билетов: ${tickets}\n` +
+                                  `Сумма: ${amount} ₽\n\n` +
+                                  `Это действие НЕЛЬЗЯ отменить!\n` +
+                                  `Вы уверены, что хотите удалить эту продажу?`;
+
+                if (!confirm(warningText)) {
+                    e.preventDefault();
+                }
+            });
+        }
+    });
+</script>
+</body>
+</html>

@@ -1,148 +1,80 @@
 package com.example.demo.controller;
 
+import com.example.demo.dto.CreateSaleDto;
 import com.example.demo.entity.Sale;
-import com.example.demo.entity.Ticket;
-import com.example.demo.entity.Cashier;
-import com.example.demo.repository.SaleRepository;
-import com.example.demo.repository.TicketRepository;
-import com.example.demo.repository.CashierRepository;
-import jakarta.validation.Valid;
+import com.example.demo.service.SaleService;
+import com.example.demo.service.SessionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import java.time.LocalDateTime;
+
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Objects;
 
 @Controller
-@RequestMapping("/sales") // Все маршруты начинаются с /sales
+@RequestMapping("/sales")
 public class SaleController {
 
     @Autowired
-    private SaleRepository saleRepository; // Репозиторий для работы с продажами
-    @Autowired
-    private TicketRepository ticketRepository; // Репозиторий для работы с билетами
-    @Autowired
-    private CashierRepository cashierRepository; // Репозиторий для работы с кассирами
+    private SaleService saleService;
 
-    /**
-     * Отображает список всех продаж
-     * @param model Модель для передачи данных
-     * @return имя шаблона списка продаж
-     */
+    @Autowired
+    private SessionService sessionService;
+
     @GetMapping
     public String listSales(Model model) {
-        // Получаем все продажи, отсортированные по дате (новые сначала)
-        List<Sale> sales = saleRepository.findAllByOrderBySaleDatetimeDesc();
+        List<Sale> sales = saleService.findAllSales();
+
+        BigDecimal totalRevenue = sales.stream()
+                .map(Sale::getPaymentAmount)
+                .filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
         model.addAttribute("sales", sales);
+        model.addAttribute("salesCount", sales.size());
+        model.addAttribute("totalRevenue", totalRevenue);
+
         return "sales/list";
     }
 
-    /**
-     * Отображает форму для создания новой продажи
-     * @param model Модель для передачи данных
-     * @return имя шаблона формы создания
-     */
-    @GetMapping("/new")
-    public String showCreateForm(Model model) {
-        model.addAttribute("sale", new Sale()); // Пустой объект для формы
-
-        // Получаем свободные билеты и активных кассиров для выпадающих списков
-        List<Ticket> availableTickets = ticketRepository.findByStatus("свободен");
-        List<Cashier> cashiers = cashierRepository.findByIsActiveTrue();
-
-        model.addAttribute("tickets", availableTickets);
-        model.addAttribute("cashiers", cashiers);
-        model.addAttribute("paymentMethods", List.of("наличные", "карта", "онлайн"));
-
+    @GetMapping("/create")
+    public String createForm(Model model) {
+        model.addAttribute("sale", new CreateSaleDto());
+        model.addAttribute("sessions", sessionService.findAll());
         return "sales/create";
     }
 
-    /**
-     * Обрабатывает создание новой продажи
-     * @param sale Данные продажи из формы
-     * @param result Результаты валидации
-     * @param ticketId ID выбранного билета
-     * @param cashierId ID выбранного кассира
-     * @param model Модель для передачи данных
-     * @return перенаправление на список продаж
-     */
     @PostMapping
-    public String createSale(@Valid @ModelAttribute Sale sale,
-                             BindingResult result,
-                             @RequestParam("ticketId") Long ticketId,
-                             @RequestParam("cashierId") Long cashierId,
-                             Model model) {
-
-        if (result.hasErrors()) {
-            // При ошибках возвращаем списки билетов и кассиров
-            model.addAttribute("tickets", ticketRepository.findByStatus("свободен"));
-            model.addAttribute("cashiers", cashierRepository.findByIsActiveTrue());
-            model.addAttribute("paymentMethods", List.of("наличные", "карта", "онлайн"));
-            return "sales/create";
-        }
-
-        // Находим билет по ID
-        Ticket ticket = ticketRepository.findById(ticketId)
-                .orElseThrow(() -> new IllegalArgumentException("Билет не найден"));
-
-        // Проверяем, свободен ли билет
-        if (!"свободен".equals(ticket.getStatus())) {
-            throw new IllegalStateException("Билет уже продан");
-        }
-
-        // Находим кассира по ID
-        Cashier cashier = cashierRepository.findById(cashierId)
-                .orElseThrow(() -> new IllegalArgumentException("Кассир не найден"));
-
-        // Устанавливаем связи
-        sale.setTicket(ticket);
-        sale.setCashier(cashier);
-        sale.setSaleDatetime(LocalDateTime.now()); // Устанавливаем текущее время
-
-        saleRepository.save(sale); // Сохраняем продажу
-
-        // Обновляем статус билета на "продан"
-        ticket.setStatus("продан");
-        ticketRepository.save(ticket);
-
+    public String saveSale(@ModelAttribute("sale") CreateSaleDto saleDto) {
+        saleService.saveSale(saleDto);
         return "redirect:/sales";
     }
 
-    /**
-     * Отображает детальную информацию о продаже
-     * @param id ID продажи
-     * @param model Модель для передачи данных
-     * @return имя шаблона просмотра продажи
-     */
-    @GetMapping("/{id}")
-    public String viewSale(@PathVariable("id") Long id, Model model) {
-        Sale sale = saleRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Продажа не найдена"));
-
-        model.addAttribute("sale", sale);
-        return "sales/view";
+    @GetMapping("/edit/{id}")
+    public String showEditForm(@PathVariable Long id, Model model) {
+        model.addAttribute("sale", saleService.getDtoById(id));
+        model.addAttribute("sessions", sessionService.findAll());
+        model.addAttribute("saleId", id);
+        return "sales/edit";
     }
 
-    /**
-     * Удаляет продажу по ID и освобождает билет
-     * @param id ID продажи для удаления
-     * @return перенаправление на список продаж
-     */
-    @GetMapping("/delete/{id}")
-    public String deleteSale(@PathVariable("id") Long id) {
-        Sale sale = saleRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Продажа не найдена"));
+    @PostMapping("/update/{id}")
+    public String updateSale(@PathVariable Long id, @ModelAttribute("sale") CreateSaleDto saleDto) {
+        saleService.updateSale(id, saleDto);
+        return "redirect:/sales";
+    }
+    @GetMapping("/{id}/delete")
+    public String confirmDelete(@PathVariable Long id, Model model) {
+        Sale sale = saleService.findById(id);
+        model.addAttribute("sale", sale);
+        return "sales/delete";
+    }
 
-        // Освобождаем билет при отмене продажи
-        Ticket ticket = sale.getTicket();
-        if (ticket != null) {
-            ticket.setStatus("свободен");
-            ticketRepository.save(ticket);
-        }
-
-        saleRepository.delete(sale); // Удаляем продажу
+    @PostMapping("/{id}/delete")
+    public String deleteSale(@PathVariable Long id) {
+        saleService.deleteSale(id);
         return "redirect:/sales";
     }
 }

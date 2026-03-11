@@ -1,35 +1,158 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><title>Продажи</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"></head>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Продажи | Кинотеатр</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        .sale-card {
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+        .sale-card:hover {
+            border-color: #198754;
+            box-shadow: 0 5px 15px rgba(25, 135, 84, 0.1);
+        }
+        .amount-badge {
+            background: #198754;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
 <body>
-<nav class="navbar navbar-dark bg-dark mb-4">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="/">🎬 Кинотеатр</a>
-        <span class="navbar-text text-white">💰 Продажи</span>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" href="/"><i class="bi bi-camera-reels"></i> КИНОТЕАТР</a>
     </div>
 </nav>
-<div class="container">
-    <h1>Продажи билетов</h1>
-    <a href="/sales/new" class="btn btn-dark mb-3">➕ Новая продажа</a>
-    <a href="/" class="btn btn-secondary mb-3">🏠 На главную</a>
 
-    <table class="table table-striped">
-        <thead><tr><th>ID</th><th>Билет</th><th>Кассир</th><th>Дата продажи</th><th>Сумма</th><th>Действия</th></tr></thead>
-        <tbody>
-        <tr th:each="sale : ${sales}">
-            <td th:text="${sale.saleId}"></td>
-            <td>Билет #<span th:text="${sale.ticket.ticketId}"></span></td>
-            <td th:text="${sale.cashier.fullName}"></td>
-            <td th:text="${sale.saleDatetime}"></td>
-            <td><span th:text="${sale.paymentAmount}"></span> ₽</td>
-            <td>
-                <a th:href="@{'/sales/delete/' + ${sale.saleId}}" class="btn btn-danger btn-sm"
-                   onclick="return confirm('Отменить продажу?')">🗑️</a>
-            </td>
-        </tr>
-        </tbody>
-    </table>
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="bi bi-cash text-success"></i> Продажи</h1>
+        <a href="/sales/create" class="btn btn-success">
+            <i class="bi bi-plus-circle"></i> Новая продажа
+        </a>
+    </div>
+
+    <!-- Форма поиска -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form th:action="@{/sales}" method="get">
+                <div class="row g-3">
+                    <div class="col-md-8">
+                        <input type="text" class="form-control" name="customer"
+                               placeholder="Поиск по имени клиента..." th:value="${param.customer}">
+                    </div>
+                    <div class="col-md-4">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-search"></i> Поиск
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Статистика -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-primary">
+                <div class="card-body text-center">
+                    <h6 class="card-title">Всего продаж</h6>
+                    <h3 th:text="${salesCount}">0</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-success">
+                <div class="card-body text-center">
+                    <h6 class="card-title">Выручка</h6>
+                    <h3 th:text="${totalRevenue} + ' ₽'">0 ₽</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-info">
+                <div class="card-body text-center">
+                    <h6 class="card-title">Всего билетов</h6>
+                    <h3 th:text="${totalTickets}">0</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-responsive" th:if="${not #lists.isEmpty(sales)}">
+        <table class="table table-hover">
+            <thead class="table-dark">
+            <tr>
+                <th><i class="bi bi-person"></i> Клиент</th>
+                <th><i class="bi bi-film"></i> Фильм</th>
+                <th><i class="bi bi-clock"></i> Дата/Время</th>
+                <th><i class="bi bi-ticket"></i> Билетов</th>
+                <th><i class="bi bi-cash"></i> Сумма</th>
+                <th><i class="bi bi-gear"></i> Действия</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="sale : ${sales}" class="sale-card">
+                <td>
+                    <strong th:text="${sale.customerName}">Клиент</strong>
+                </td>
+                <td>
+                    <span th:text="${sale.session?.film?.title} ?: 'Не указано'">Фильм</span>
+                </td>
+                <td>
+                    <small th:text="${sale.saleDatetime ? #dates.format(sale.saleDatetime, 'dd.MM.yyyy HH:mm') : 'Не указано'}">
+                        01.01.2024 18:00
+                    </small>
+                </td>
+                <td>
+                    <span class="badge bg-info" th:text="${sale.ticketsCount}">1</span>
+                </td>
+                <td>
+                    <span class="amount-badge" th:text="${sale.paymentAmount} + ' ₽'">500 ₽</span>
+                </td>
+                <td>
+                    <div class="btn-group btn-group-sm">
+                        <a th:href="@{/sales/{id}/edit(id=${sale.saleId})}"
+                           class="btn btn-warning">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <form th:action="@{/sales/{id}/delete(id=${sale.saleId})}"
+                              method="post" style="display:inline;">
+                            <button type="submit" class="btn btn-danger"
+                                    onclick="return confirm('Удалить продажу?')">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div th:if="${#lists.isEmpty(sales)}" class="text-center py-5">
+        <div class="display-1 text-muted">
+            <i class="bi bi-cart-x"></i>
+        </div>
+        <h3 class="text-muted">Продажи не найдены</h3>
+        <p class="lead" th:if="${param.customer}">
+            По запросу "<span th:text="${param.customer}"></span>" ничего не найдено
+        </p>
+        <p class="lead" th:unless="${param.customer}">
+            Ещё не было оформлено ни одной продажи
+        </p>
+        <a href="/sales/create" class="btn btn-success btn-lg">
+            <i class="bi bi-plus-circle"></i> Оформить продажу
+        </a>
+    </div>
 </div>
 </body>
 </html>

@@ -2,6 +2,7 @@ package com.example.demo.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -14,40 +15,29 @@ public class Film {
     private Long filmId;
 
     @NotBlank(message = "Название обязательно")
-    @Size(max = 200, message = "Название не должно превышать 200 символов")
+    @Size(max = 200, message = "Максимум 200 символов")
     @Column(name = "title", nullable = false)
     private String title;
 
     @NotBlank(message = "Жанр обязателен")
-    @Size(max = 100, message = "Жанр не должен превышать 100 символов")
+    @Size(max = 100, message = "Максимум 100 символов")
     @Column(name = "genre", nullable = false)
     private String genre;
 
-    @NotNull(message = "Длительность обязательна")
-    @Min(value = 1, message = "Длительность должна быть положительной")
+    @Min(value = 1, message = "Длительность от 1 минуты")
+    @Max(value = 300, message = "Максимум 300 минут")
     @Column(name = "duration", nullable = false)
     private Integer duration;
 
-    @NotBlank(message = "Возрастной рейтинг обязателен")
-    @Pattern(regexp = "0\\+|6\\+|12\\+|16\\+|18\\+",
-            message = "Возрастной рейтинг должен быть: 0+, 6+, 12+, 16+, 18+")
+    @NotBlank(message = "Рейтинг обязателен")
     @Column(name = "age_rating", nullable = false)
     private String ageRating;
 
     @OneToMany(mappedBy = "film", cascade = CascadeType.ALL)
-    private List<Session> sessions;
+    private List<Session> sessions = new ArrayList<>();
 
-    // Конструкторы
     public Film() {}
 
-    public Film(String title, String genre, Integer duration, String ageRating) {
-        this.title = title;
-        this.genre = genre;
-        this.duration = duration;
-        this.ageRating = ageRating;
-    }
-
-    // Геттеры и сеттеры
     public Long getFilmId() { return filmId; }
     public void setFilmId(Long filmId) { this.filmId = filmId; }
 
@@ -65,9 +55,4 @@ public class Film {
 
     public List<Session> getSessions() { return sessions; }
     public void setSessions(List<Session> sessions) { this.sessions = sessions; }
-
-    @Override
-    public String toString() {
-        return title + " (" + genre + ", " + duration + " мин, " + ageRating + ")";
-    }
 }
